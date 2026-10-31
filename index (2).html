@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="早鸟票 AI Native 多角色协作工作台：基于三份公开 GitHub 仓库的项目快照、真实证据链接和本地交互模拟。">
+<title>早鸟票 · AI Native 多角色协作工作台</title>
+<style>
+:root{--ink:#2b302f;--brown:#392b27;--muted:#817c73;--paper:#f8f6f2;--line:#e7e3db;--orange:#bd6d4c;--orange-bg:#fff0e8;--blue:#3767aa;--blue-bg:#ecf3ff;--mint:#397a66;--mint-bg:#e9f5ed;--purple:#8555a4;--purple-bg:#f4edfa;--white:#fff;--shadow:0 7px 34px rgba(74,60,47,.055)}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;color:var(--ink);background:var(--paper);font:14px/1.65 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft Yahei",Arial,sans-serif}
+button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #e9a46b;outline-offset:3px}
+h1,h2,h3,p{margin:0}h1,h2,h3{line-height:1.35}h1{font-size:26px;letter-spacing:-.04em}h2{font-size:18px;letter-spacing:-.025em}h3{font-size:14px}small{font-size:11px}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+.sidebar{background:#fff;border-right:1px solid var(--line);padding:26px 14px 20px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 25px}.logo{background:#392b27;color:#ffe6d5;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:18px}
+.brand strong{display:block;font-size:13px}.brand span{display:block;font-size:10px;color:var(--muted)}
+.sidebar-label{font-size:10px;color:#aaa197;letter-spacing:.12em;font-weight:850;padding:16px 13px 8px}
+.nav-btn{background:transparent;border:0;color:#67645f;border-radius:10px;width:100%;display:flex;align-items:center;text-align:left;gap:10px;padding:10px 12px;font-size:13px;margin:2px 0}
+.nav-btn:hover{background:#f7f3ed}.nav-btn.active{background:#f3eae3;color:#8b4d32;font-weight:800}
+.nav-icon{width:19px;text-align:center;font-size:16px;color:#90887e}.nav-btn.active .nav-icon{color:#b06e4d}
+.nav-count{margin-left:auto;border-radius:30px;background:#e9e3db;font-size:10px;min-width:20px;padding:1px 6px;text-align:center;color:#786b60}
+.side-bottom{margin-top:auto;border-top:1px solid var(--line);padding:15px 8px 0}
+.side-bottom p{color:var(--muted);font-size:11px;line-height:1.6;margin-bottom:11px}
+.side-link{display:block;padding:9px 10px;border:1px solid var(--line);border-radius:9px;font-size:11px;font-weight:700;text-align:center;color:#584f49}
+.main{min-width:0}
+.topbar{position:sticky;top:0;z-index:12;background:rgba(248,246,242,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);height:66px;display:flex;justify-content:space-between;align-items:center;padding:0 33px;gap:12px}
+.crumb{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px}.crumb strong{color:#625b54}
+.top-actions{display:flex;align-items:center;gap:10px}
+.pill,.badge{display:inline-flex;align-items:center;gap:5px;border-radius:50px;padding:4px 9px;font-size:11px;font-weight:750;white-space:nowrap}
+.pill{background:#fff;border:1px solid var(--line);color:#776f65}.badge.slate{background:#f2f1ee;color:#6f6c67}.badge.green{background:var(--mint-bg);color:var(--mint)}.badge.amber{background:#fff1e4;color:#a66b2e}.badge.blue{background:var(--blue-bg);color:var(--blue)}.badge.purple{background:var(--purple-bg);color:var(--purple)}
+.role-choice{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#524c46;max-width:190px}
+.content{max-width:1390px;margin:0 auto;padding:31px 32px 70px}
+.page{display:none}.page.active{display:block}
+.herohead{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:23px}.herohead p{color:var(--muted);font-size:12px;margin-top:8px}.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--orange);font-weight:850;margin-bottom:7px}
+.btn{border:1px solid var(--line);padding:10px 15px;border-radius:9px;color:#5f564d;background:#fff;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:background .18s}
+.btn:hover{background:#faf5ef}.btn.primary{background:#49342d;color:#fff;border-color:#49342d}.btn.primary:hover{background:#694635}.btn.soft{background:#f8eae1;color:#9d5937;border-color:#f4d9c8}.btn.red{color:#af4a41;background:#fff3f1;border-color:#f6d9d5}.btn:disabled{opacity:.45;cursor:default}
+.card{background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}.stat{padding:19px}.stat .label{color:var(--muted);font-size:11px}.stat strong{display:block;font-size:31px;font-weight:850;line-height:1.35;margin-top:7px}.stat .sub{font-size:10px;color:#a29b90;margin-top:3px}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(270px,.85fr);gap:16px;margin-top:16px}.panel{padding:22px;min-width:0}.panel-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:19px;gap:10px}.panel-title p{font-size:11px;color:var(--muted);margin-top:3px}
+.line{height:1px;background:var(--line);margin:15px 0}
+.case-top{background:#faf7f3;border-radius:11px;padding:15px 17px;margin-bottom:18px;border:1px solid #eee8e0}.case-top p{font-size:12px;color:#7a7168;margin-top:5px}
+.stepper{display:flex;gap:0;margin:17px 0 18px;overflow-x:auto;max-width:100%;padding:4px 0 9px}
+.stepper button{border:0;background:transparent;min-width:79px;position:relative;flex:1;padding:0 5px;text-align:center;color:#83796e;font-size:10px}
+.stepper button:before{content:"";height:2px;background:#e6ded4;position:absolute;left:0;right:0;top:13px;z-index:0}
+.stepper button:first-child:before{left:50%}.stepper button:last-child:before{right:50%}
+.stepper i{display:grid;place-items:center;margin:0 auto 10px;width:26px;height:26px;position:relative;border-radius:50%;background:#ede8e2;color:#766b60;font-size:11px;font-weight:900;font-style:normal}
+.stepper button.selected i{background:#b06b49;color:#fff;box-shadow:0 0 0 4px #f7e9df}
+.stepper button.done i{background:#d6eadb;color:#39715a}
+.stepper button.selected{color:#9b5636;font-weight:900}
+.step-detail{display:grid;grid-template-columns:1.15fr .85fr;gap:15px;background:#fbfaf7;border:1px solid #eee9e1;border-radius:11px;padding:17px}
+.step-detail p{font-size:12px;color:var(--muted);margin-top:8px}
+.step-evidence{padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:9px;font-size:11px}
+.step-evidence span{display:block;color:var(--muted);margin-bottom:7px}
+.step-evidence a{word-break:break-all}
+.list{display:flex;flex-direction:column;gap:9px}.item{border:1px solid #eee8e2;border-radius:10px;padding:12px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;background:#fff;text-align:left}.item strong{display:block;font-size:12px}.item small{display:block;color:var(--muted);font-size:10px;margin-top:3px}
+.notice{background:#fff8f1;color:#996d4a;padding:12px 14px;border-radius:10px;font-size:11px;border:1px solid #f4e4d3}
+.section-gap{margin-top:18px}
+.tasks-table{width:100%;border-collapse:collapse;font-size:12px}.tasks-table th{background:#faf8f5;color:#82796d;font-weight:700;font-size:11px;text-align:left}.tasks-table td,.tasks-table th{padding:14px 13px;border-bottom:1px solid #eee9e3}.tasks-table tr:last-child td{border-bottom:0}.tasks-table td small{color:var(--muted)}
+.board-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.board-col{padding:14px;background:#f7f5f1;border:1px solid var(--line);border-radius:12px;min-height:170px}.board-col h3{margin-bottom:13px;font-size:12px;color:#71665d}.task-card{display:block;text-align:left;background:white;border:1px solid #e9e2d9;border-radius:10px;padding:14px;width:100%;margin-bottom:9px}.task-card small{display:block;margin-top:7px;color:var(--muted)}
+.tabs{display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line);margin-bottom:18px;overflow-x:auto}.tabs button{padding:11px 15px;border:0;background:none;color:#8b8178;font-size:12px;border-bottom:2px solid transparent;white-space:nowrap}.tabs button.active{color:#a45938;font-weight:850;border-bottom-color:#bf7753}
+.proof-link{display:inline-block;font-size:11px;color:#3869a0;line-height:1.5;word-break:break-all}
+.block-title{font-size:13px;font-weight:850;margin-bottom:12px}
+.kv{display:grid;grid-template-columns:125px 1fr;gap:10px;font-size:12px;padding:8px 0;border-bottom:1px solid #f1ece7}.kv>span:first-child{color:#9c9388}.kv strong{font-weight:650}
+.rail{border-left:2px solid #e8dcd0;padding-left:17px;margin:18px 0}
+.rail-row{position:relative;padding-bottom:19px;font-size:12px}.rail-row:before{content:"";position:absolute;left:-23px;top:4px;width:9px;height:9px;background:#c77a54;border-radius:50%;border:2px solid #fff}
+.rail-row p{color:var(--muted);font-size:11px;margin-top:3px}
+.evidence{display:grid;grid-template-columns:1fr 1fr;gap:12px}.evidence .card{padding:17px}
+.inline-code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:11px;background:#f4f1ed;border-radius:5px;padding:2px 5px}
+.repo-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.repo-box{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff}.repo-box h3{font-size:15px}.repo-box p{color:var(--muted);font-size:11px;margin:9px 0 15px}.folder{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #f0ece6;padding:9px 0;color:#6b655f;font-size:11px}.folder:last-child{border:0}
+.mini-label{color:#a7a096;font-size:10px;font-weight:750;letter-spacing:.06em}
+.simbar{margin-bottom:18px;background:#f1f4ff;border:1px solid #dce5ff;color:#3f6396;padding:12px 15px;border-radius:10px;font-size:11px;display:flex;gap:9px;align-items:center}
+.sim-grid{display:grid;grid-template-columns:1fr .95fr;gap:16px}
+.form{display:grid;gap:11px}.form label{color:#83796d;font-size:11px;font-weight:700;display:grid;gap:6px}.form input,.form textarea,.form select{padding:10px 11px;border:1px solid #dfdcd6;border-radius:8px;background:#fff;color:#3c3c37;min-width:0;width:100%}.form textarea{min-height:95px;resize:vertical}
+.statusline{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.log{max-height:310px;overflow:auto}.log-row{border-left:2px solid #ebd7c9;padding:0 0 16px 13px;margin:2px 0 0 5px;font-size:11px}.log-row strong{display:block;font-size:12px}.log-row p{color:var(--muted);margin-top:2px}
+.demo-buttons{display:flex;gap:8px;flex-wrap:wrap}.demo-buttons .btn{font-size:11px}
+.rule-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rule{padding:14px;border:1px solid var(--line);border-radius:10px;background:#fff}.rule b{color:var(--orange);font-size:11px}.rule p{font-size:11px;color:#786f68;margin-top:5px}
+.case-check{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.check{padding:13px 14px;border:1px solid #e5e0d8;background:#fff;border-radius:9px}.check b{display:block;font-size:12px}.check small{color:#8b8177}.check .badge{margin-top:7px}
+.callout{padding:20px;border:1px solid #efdac9;background:#fff6ee;border-radius:12px;font-size:12px;color:#79594b}
+.mobile-menu{display:none}.footer{color:#a1988e;font-size:10px;margin-top:28px}
+@media (max-width:1100px){.two{grid-template-columns:minmax(0,1fr)}.grid4{grid-template-columns:repeat(2,1fr)}.repo-row{grid-template-columns:1fr}.sim-grid{grid-template-columns:1fr}}
+@media (max-width:750px){.app{display:block}.sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-101%);width:235px;transition:transform .22s;box-shadow:4px 0 20px #0001}.sidebar.show{transform:translateX(0)}.mobile-menu{display:inline-flex}.topbar{padding:0 15px}.content{padding:24px 14px 45px}.crumb{font-size:10px}.pill.hide-sm{display:none}.role-choice{max-width:110px;font-size:11px}.herohead{display:block}.herohead .btn{margin-top:12px}.grid4{grid-template-columns:repeat(2,1fr);gap:8px}.stat{padding:14px}.stat strong{font-size:26px}.step-detail,.sim-grid,.evidence,.case-check,.rule-grid,.board-cards{grid-template-columns:1fr}.stepper button{min-width:80px}.panel{padding:16px}.kv{grid-template-columns:95px 1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar" id="sidebar">
+ <div class="brand"><span class="logo">早</span><div><strong>早鸟票 AI Native</strong><span>多角色协作工作台 · PoC</span></div></div>
+ <div class="sidebar-label">公共工作区</div>
+ <button class="nav-btn active" data-page="overview"><span class="nav-icon">▦</span> 项目总览</button>
+ <button class="nav-btn" data-page="tasks"><span class="nav-icon">☷</span> 任务看板 <span class="nav-count">2</span></button>
+ <button class="nav-btn" data-page="exchange"><span class="nav-icon">⇄</span> 交换区与单据</button>
+ <button class="nav-btn" data-page="knowledge"><span class="nav-icon">◫</span> 公共知识库</button>
+ <div class="sidebar-label">个人工作区</div>
+ <button class="nav-btn" data-page="members"><span class="nav-icon">♙</span> 成员与个人仓</button>
+ <button class="nav-btn" data-page="demo"><span class="nav-icon">▷</span> 协作模拟演示</button>
+ <div class="sidebar-label">质量与证据</div>
+ <button class="nav-btn" data-page="quality"><span class="nav-icon">◇</span> 规则校验</button>
+ <button class="nav-btn" data-page="evidence"><span class="nav-icon">↗</span> GitHub 证据链</button>
+ <div class="side-bottom"><p><span class="badge blue">教学模拟 / 本地演示</span></p><p>真实仓库文件和提交记录已关联，网页内操作不会修改 GitHub。</p><a class="side-link" href="https://github.com/sallygou/01--early-bird--public" target="_blank" rel="noopener">↗ 打开公共仓</a></div>
+</aside>
+<div class="main">
+<header class="topbar">
+ <div class="crumb"><button class="btn mobile-menu" id="menu" aria-label="打开导航">☰</button><span>早鸟票项目空间</span><span>／</span><strong id="crumb">项目总览</strong></div>
+ <div class="top-actions"><span class="pill hide-sm">● 已公开的 GitHub 证据</span><select class="role-choice" id="role" aria-label="查看身份"><option value="all">公共视角</option><option value="zhang">张若彤 · 活动平台</option><option value="wang">王小明 · 交易系统</option></select></div>
+</header>
+<main class="content">
+<section class="page active" id="page-overview">
+ <div class="herohead"><div><div class="eyebrow">WORKSPACE / DASHBOARD</div><h1>项目总览</h1><p>看得见任务、看得清边界、追得上每一次交接。以下为公开仓库记录的 2026-10-29 案例快照。</p></div><button class="btn primary" data-go="demo">▷ 演示一次协作</button></div>
+ <div class="grid4">
+  <div class="card stat"><div class="label">已归档任务包</div><strong>2</strong><div class="sub">ZRT / WXM · 真实记录</div></div>
+  <div class="card stat"><div class="label">已完成交接</div><strong>1</strong><div class="sub">协同单 → 回执单</div></div>
+  <div class="card stat"><div class="label">正式知识条目</div><strong>1</strong><div class="sub">ZS-001 · current</div></div>
+  <div class="card stat"><div class="label">待裁决问题</div><strong>2</strong><div class="sub">幂等键 / 沙箱 20 QPS</div></div>
+ </div>
+ <div class="two">
+  <div class="card panel">
+   <div class="panel-title"><div><h2>真实协作案例 · 十节点流转</h2><p>点击节点，查看当时发生的动作与对应 GitHub 文件</p></div><span class="badge green">已完成的课程 PoC</span></div>
+   <div class="case-top"><strong>早鸟票活动页面 ↔ 交易系统订单接口确认</strong><p>张若彤需要确认订单接口字段与限制，王小明交付说明，张若彤完成验收后将成果入库。</p></div>
+   <div class="stepper" id="stepper" aria-label="真实协作案例步骤"></div>
+   <div class="step-detail"><div><span class="mini-label" id="caseStepLabel">STEP 01 / 张若彤</span><h3 id="caseStepTitle">建立任务包</h3><p id="caseStepDesc"></p></div><div class="step-evidence"><span>📎 对应仓库证据</span><a id="caseStepLink" target="_blank" rel="noopener">查看 GitHub 文件 ↗</a><p id="caseStepCommit" style="margin-top:8px;color:#a79b8f;font-size:10px"></p></div></div>
+  </div>
+  <div class="card panel">
+   <div class="panel-title"><div><h2>待裁决 · 2 项</h2><p>真实看板记录，尚未完成决策</p></div><span class="badge amber">人工跟进</span></div>
+   <div class="list">
+    <div class="item"><div><strong>幂等键由哪一侧生成？</strong><small>王小明提出 · 联调前需要裁决</small></div><span class="badge amber">待裁决</span></div>
+    <div class="item"><div><strong>沙箱 20 QPS 能否覆盖峰值？</strong><small>教学模拟接口参数 · 压测前需要裁决</small></div><span class="badge amber">待裁决</span></div>
+   </div>
+   <div class="line"></div>
+   <div class="panel-title" style="margin-bottom:10px"><h2>项目边界</h2></div>
+   <p style="color:#7d736a;font-size:12px">三仓 Git 独立；交换区靠文件复制与提交完成模拟交接；没有实时多 Agent 调度和跨仓自动同步。</p>
+   <button class="btn" data-go="evidence" style="margin-top:17px;width:100%">查看真实证据与限制 ↗</button>
+  </div>
+ </div>
+ <div class="two">
+  <div class="card panel"><div class="panel-title"><h2>实际任务看板</h2><a class="proof-link" href="https://github.com/sallygou/01--early-bird--public/blob/main/00-推进管理/任务看板.md" target="_blank" rel="noopener">查看原始看板 ↗</a></div>
+   <table class="tasks-table"><thead><tr><th>任务包</th><th>负责人</th><th>当前结果</th></tr></thead><tbody><tr><td><strong>ZRT-20261029-01</strong><br><small>早鸟票页面依赖订单接口</small></td><td>张若彤</td><td><span class="badge green">已归档</span></td></tr><tr><td><strong>WXM-20261029-01</strong><br><small>订单接口确认</small></td><td>王小明</td><td><span class="badge green">已归档</span></td></tr></tbody></table>
+  </div>
+  <div class="card panel"><div class="panel-title"><h2>信息流原则</h2><span class="badge blue">公共 → 个人 → 公共</span></div><div class="rail"><div class="rail-row"><strong>公共仓：发布协同单</strong><p>交换区是跨成员正式交接入口</p></div><div class="rail-row"><strong>个人仓：执行、试错、交付</strong><p>在制品不直接进入公共知识</p></div><div class="rail-row"><strong>公共仓：审核后生效</strong><p>ZS-001 经记录审核，再进入 current</p></div></div></div>
+ </div>
+</section>
+
+<section class="page" id="page-tasks">
+ <div class="herohead"><div><div class="eyebrow">TASKS / REAL SNAPSHOT</div><h1>任务看板</h1><p>仓库里可验证的两条已完成任务，不添加没有来源的“真实任务”。</p></div><a class="btn" target="_blank" rel="noopener" href="https://github.com/sallygou/01--early-bird--public/blob/main/00-推进管理/任务看板.md">查看源文件 ↗</a></div>
+ <div class="board-cards">
+  <div class="board-col"><h3>待处理 / 进行中 · 0</h3><div style="color:#a2988e;font-size:11px">本次真实协作案例已闭环。练习新增任务请进入“协作模拟演示”。</div></div>
+  <div class="board-col"><h3>待验收 · 0</h3><div style="color:#a2988e;font-size:11px">案例中的回执已验收。待裁决事项不等于当前待验收任务。</div></div>
+  <div class="board-col"><h3>已完成·已归档 · 2</h3><button class="task-card" data-detail="zhang"><strong>ZRT-20261029-01</strong><small>张若彤 · 活动页面订单接口确认</small><span class="badge green" style="margin-top:10px">查看详情 →</span></button><button class="task-card" data-detail="wang"><strong>WXM-20261029-01</strong><small>王小明 · 订单接口确认</small><span class="badge green" style="margin-top:10px">查看详情 →</span></button></div>
+ </div>
+ <div class="card panel section-gap" id="taskDetail"><div class="panel-title"><h2>任务详情</h2><span class="badge slate">点击上方任务卡片</span></div><p style="color:var(--muted);font-size:12px">选择任务即可看到任务包编号、负责人、关联单据及真实文件入口。</p></div>
+</section>
+
+<section class="page" id="page-exchange">
+ <div class="herohead"><div><div class="eyebrow">HANDOFF / EXCHANGE</div><h1>交换区与正式单据</h1><p>跨成员的正式交付走公共仓交换区；聊天对话不能替代协同单和回执。</p></div><button class="btn primary" data-go="demo">＋ 发起模拟协同单</button></div>
+ <div class="card panel"><div class="tabs" id="exchangeTabs"><button class="active" data-ex="request">已发出的协同单</button><button data-ex="receipt">已收到的回执</button><button data-ex="return">退回单说明</button></div><div id="exchangeBody"></div></div>
+ <div class="card panel section-gap"><div class="panel-title"><h2>为什么要有交换区？</h2></div><div class="grid4" style="grid-template-columns:repeat(3,1fr)"><div><strong>可定位</strong><p style="font-size:11px;color:var(--muted)">通过正式编号定位上游需求</p></div><div><strong>可核验</strong><p style="font-size:11px;color:var(--muted)">回执必须关联原始协同单</p></div><div><strong>可追溯</strong><p style="font-size:11px;color:var(--muted)">Git 提交历史保留交付记录</p></div></div></div>
+</section>
+
+<section class="page" id="page-knowledge">
+ <div class="herohead"><div><div class="eyebrow">KNOWLEDGE / APPROVAL</div><h1>公共知识库</h1><p>只有审核通过的成果才能进入 current；history 是预留机制，本案例尚无历史版本替换。</p></div><a class="btn" target="_blank" rel="noopener" href="https://github.com/sallygou/01--early-bird--public/tree/main/03-知识区">浏览知识目录 ↗</a></div>
+ <div class="grid4" style="grid-template-columns:repeat(3,1fr)"><div class="card stat"><div class="label">current 正式条目</div><strong>1</strong><div class="sub">ZS-001</div></div><div class="card stat"><div class="label">history 旧版本</div><strong>0</strong><div class="sub">尚无真实版本更替</div></div><div class="card stat"><div class="label">待审核</div><strong>0</strong><div class="sub">本案例已完成入库</div></div></div>
+ <div class="two"><div class="card panel"><div class="panel-title"><h2>ZS-001 · 活动页面对接订单接口要点</h2><span class="badge green">审核通过 / 当前有效</span></div>
+ <div class="kv"><span>作者</span><strong>王小明</strong></div><div class="kv"><span>审核人</span><strong>张若彤（非作者审核）</strong></div><div class="kv"><span>来源</span><strong>WXM-20261029-01 / ZRT-20261029-01</strong></div><div class="kv"><span>关联单据</span><strong>协同单-20261029-001 / 回执单-20261029-001</strong></div><div class="kv"><span>入库位置</span><strong>03-知识区/动态知识/current</strong></div><div style="margin-top:19px"><a class="btn" href="https://github.com/sallygou/01--early-bird--public/blob/main/03-知识区/动态知识/current/ZS-001-活动页面对接订单接口要点.md" target="_blank" rel="noopener">查看 ZS-001 原件 ↗</a></div></div>
+ <div class="card panel"><div class="panel-title"><h2>为什么审核与入库分两次提交？</h2></div><div class="rail"><div class="rail-row"><strong>审核记录</strong><p>Git 提交 8cdf307 · 有审核才允许正式发布</p></div><div class="rail-row"><strong>进入 current</strong><p>Git 提交 d99915b · 审核之后再入库</p></div></div><div class="notice">把「审核事件」与「知识生效事件」分开，面试官可以通过 Git 历史核对发生顺序。</div></div></div>
+</section>
+
+<section class="page" id="page-members">
+ <div class="herohead"><div><div class="eyebrow">MEMBERS / THREE REPOSITORIES</div><h1>成员与个人工作区</h1><p>三个 Git 仓库各自有历史。公共仓负责共识，个人仓负责进行中的工作和试错。</p></div></div>
+ <div class="repo-row">
+  <article class="repo-box"><span class="badge blue">公共</span><h3 style="margin-top:13px">01 · 早鸟票公共仓</h3><p>项目推进、名册、协作契约、交换区、知识审核、校验脚本。</p><div class="folder">00-推进管理 <span>计划、看板</span></div><div class="folder">02-协作契约 <span>协议、模板</span></div><div class="folder">03-知识区 <span>current/history</span></div><div class="folder">04-交换区 <span>协同单、回执</span></div><div class="folder">88-工具箱 <span>validate.py / Hook</span></div><p><a href="https://github.com/sallygou/01--early-bird--public" target="_blank" rel="noopener">打开真实公共仓 ↗</a></p></article>
+  <article class="repo-box"><span class="badge amber">模拟成员</span><h3 style="margin-top:13px">02 · 张若彤</h3><p>活动平台方向。创建 ZRT 任务、发起协同、人工验收。</p><div class="folder">01-输入 <span>接收记录</span></div><div class="folder">02-任务 <span>执行中任务</span></div><div class="folder">03-生效区 <span>验收结论</span></div><div class="folder">04-归档 <span>ZRT 任务包</span></div><div class="folder">09-日志 <span>过程日志</span></div><p><a href="https://github.com/sallygou/02--zhang--personal" target="_blank" rel="noopener">打开张若彤个人仓 ↗</a></p></article>
+  <article class="repo-box"><span class="badge purple">模拟成员</span><h3 style="margin-top:13px">03 · 王小明</h3><p>交易系统方向。接收协同、编写订单接口说明、生成回执。</p><div class="folder">01-输入 <span>协同单留痕</span></div><div class="folder">02-任务 <span>执行中任务</span></div><div class="folder">03-生效区 <span>DOC-20261029-001</span></div><div class="folder">04-归档 <span>WXM 任务包</span></div><div class="folder">09-日志 <span>过程日志</span></div><p><a href="https://github.com/sallygou/03--wang--personal" target="_blank" rel="noopener">打开王小明个人仓 ↗</a></p></article>
+ </div>
+ <div class="callout section-gap">设计取舍：这个 Demo 使用“切换视角”模拟两种角色，不是真实登录权限。真实多人隔离依赖仓库权限、分支保护和后端鉴权；前端切换只是为了面试时讲清业务机制。</div>
+</section>
+
+<section class="page" id="page-demo">
+ <div class="herohead"><div><div class="eyebrow">SANDBOX / INTERACTIVE WALKTHROUGH</div><h1>协作模拟演示</h1><p>一条可以真正点击的任务链路：发起 → 领取 → 回执（或退回）→ 人工验收 → 模拟入库。</p></div><button class="btn" id="resetDemo">↺ 重置演示</button></div>
+ <div class="simbar">◉ <strong>本地模拟模式</strong>：此处操作只更新当前浏览器的演示状态，不会给真实仓库写文件，也不会调用 Agent CLI。</div>
+ <div class="sim-grid"><div class="card panel">
+  <div class="panel-title"><div><h2>当前模拟单据</h2><p id="simSubtitle">还没有发起协同单</p></div><span class="badge blue" id="simStatus">待创建</span></div>
+  <div id="simEntry" class="form">
+    <label>发起人<input value="张若彤 · 活动平台" disabled></label>
+    <label>接收人<input value="王小明 · 交易系统" disabled></label>
+    <label>协同主题<input id="simTitle" value="确认早鸟票订单接口字段与限流规则" maxlength="120"></label>
+    <label>任务说明<textarea id="simDesc">请确认订单创建接口的必要字段、幂等要求、错误码与沙箱限流规则。</textarea></label>
+    <button class="btn primary" id="simSend">发起协同单 →</button>
+  </div>
+  <div id="simControls" hidden><div class="kv"><span>单据编号</span><strong>演示-协同单-001</strong></div><div class="kv"><span>发起 / 接收</span><strong>张若彤 → 王小明</strong></div><div class="kv"><span>主题</span><strong id="simTaskName"></strong></div><div class="kv"><span>当前阶段</span><strong id="simStageName"></strong></div><div class="line"></div><p id="simHelp" style="font-size:12px;color:var(--muted);margin-bottom:12px"></p><div id="simActions" class="demo-buttons"></div></div>
+ </div>
+ <div class="card panel"><div class="panel-title"><div><h2>协作记录</h2><p>每次点击会生成一条可见的状态日志</p></div><span class="badge slate">只在本页演示</span></div><div class="log" id="simLog"><div class="notice">先在左侧创建模拟协同单。</div></div><div class="line"></div><h3>如何向面试官解释？</h3><p style="font-size:12px;color:var(--muted);margin-top:8px">“这条操作流展示协同协议和人机职责边界；真实提交与校验证据在三个 Git 仓库里，网页里的角色切换与状态更新是 Mock 演示。”</p><button class="btn" data-go="evidence" style="margin-top:16px">查看对应 GitHub 证据 ↗</button></div></div>
+</section>
+
+<section class="page" id="page-quality">
+ <div class="herohead"><div><div class="eyebrow">QUALITY / STABILITY</div><h1>规则校验与稳定性</h1><p>来自真实仓库的 YAML + Python + pre-commit Hook 三件套；以下展示的是已记录的测试结果，不会在网页远程执行校验。</p></div><a class="btn" target="_blank" rel="noopener" href="https://github.com/sallygou/01--early-bird--public/tree/main/88-工具箱">查看工具箱 ↗</a></div>
+ <div class="grid4" style="grid-template-columns:repeat(3,1fr)"><div class="card stat"><div class="label">校验规则</div><strong>R1–R9</strong><div class="sub">9 个维度</div></div><div class="card stat"><div class="label">记录的测试组</div><strong>6</strong><div class="sub">合法 / 异常注入</div></div><div class="card stat"><div class="label">全量结果（README）</div><strong>0</strong><div class="sub">错误项 · 该次本地基线</div></div></div>
+ <div class="card panel section-gap"><div class="panel-title"><div><h2>校验维度</h2><p>结构合规不等于业务正确；只对可确定的规则做机器判断。</p></div></div><div class="rule-grid" id="rules"></div></div>
+ <div class="card panel section-gap"><div class="panel-title"><h2>六组已记录测试</h2><a href="https://github.com/sallygou/01--early-bird--public/blob/main/作业展示/04-稳定性机制与测试报告.md" class="proof-link" target="_blank" rel="noopener">打开测试报告 ↗</a></div><div class="case-check" id="tests"></div></div>
+ <div class="callout section-gap">两个真实调试问题：Git 对中文路径的转义使 Hook 静默漏检；另一处 stdin 重定向覆盖了管道输入。最终通过关闭路径转义、改用标准输入清单与移除错误重定向进行修复。真实证据以仓库测试报告为准。</div>
+</section>
+
+<section class="page" id="page-evidence">
+ <div class="herohead"><div><div class="eyebrow">EVIDENCE / SOURCE OF TRUTH</div><h1>GitHub 证据链</h1><p>演示网页负责“讲清机制”，GitHub 负责“证明发生过什么”。点击可直接进入公开的原始文件。</p></div></div>
+ <div class="evidence" id="proofs"></div>
+ <div class="card panel section-gap"><div class="panel-title"><h2>明确未实现或尚未验证的能力</h2></div>
+ <div class="list">
+  <div class="item"><strong>真实 Agent CLI 与多 Agent 自主调度</strong><span class="badge slate">未实现</span></div>
+  <div class="item"><strong>跨仓文件自动投递与实时同步</strong><span class="badge slate">人工模拟</span></div>
+  <div class="item"><strong>退回单完整实战</strong><span class="badge amber">仅模板</span></div>
+  <div class="item"><strong>current → history 历史版本替换</strong><span class="badge amber">未发生</span></div>
+  <div class="item"><strong>GitHub Actions 集中校验与保护分支</strong><span class="badge slate">未配置</span></div>
+  <div class="item"><strong>自动通知与自动化看板汇总</strong><span class="badge slate">未实现</span></div>
+ </div></div>
+</section>
+<footer class="footer">AI Native Workspace PoC · 案例时间：2026-10-29 · GitHub 资料快照 + 本地 Mock 演示 · 不获取隐私、无需令牌</footer>
+</main>
+</div></div>
+<script>
+"use strict";
+const PUBLIC="https://github.com/sallygou/01--early-bird--public",ZHANG="https://github.com/sallygou/02--zhang--personal",WANG="https://github.com/sallygou/03--wang--personal";
+const file=(base,path)=>base+"/blob/main/"+path.split("/").map(encodeURIComponent).join("/");
+const folder=(base,path)=>base+"/tree/main/"+path.split("/").map(encodeURIComponent).join("/");
+const E={
+  brief:file(PUBLIC,"作业展示/03-完整协作案例.md"),
+  board:file(PUBLIC,"00-推进管理/任务看板.md"),
+  request:file(PUBLIC,"04-交换区/已完成-20261029/协同单-20261029-001.md"),
+  receipt:file(PUBLIC,"04-交换区/已完成-20261029/回执单-20261029-001.md"),
+  deliver:file(WANG,"03-生效区/订单接口确认说明-20261029.md"),
+  acceptance:file(ZHANG,"03-生效区/ZRT-20261029-01-验收结论.md"),
+  knowledge:file(PUBLIC,"03-知识区/动态知识/current/ZS-001-活动页面对接订单接口要点.md"),
+  audit:file(PUBLIC,"00-推进管理/审核记录-2026-10-29.md"),
+  tests:file(PUBLIC,"作业展示/04-稳定性机制与测试报告.md"),
+  validator:file(PUBLIC,"88-工具箱/validate.py"),
+  hook:file(PUBLIC,"88-工具箱/pre-commit"),
+  schema:file(PUBLIC,"02-协作契约/YAML字段规范-v1.md"),
+  contract:file(PUBLIC,"02-协作契约/协作契约-v1.md"),
+  ztask:folder(ZHANG,"04-归档"),
+  wtask:folder(WANG,"04-归档")
+};
+const stepData=[
+ ["创建任务","张若彤","ZRT-20261029-01：独立任务包记录需求与验收条件。",E.ztask,"张若彤仓 · 16f836f"],
+ ["协同单","张若彤","协同单-20261029-001：向王小明确认订单接口字段、幂等和限流。",E.request,"公共仓 · c20cb7d"],
+ ["交换区","公共仓","从张若彤工作区将正式协同单投递到公共交换区。",E.request,"公共仓 · c20cb7d"],
+ ["接收任务","王小明","接收协同单，留痕后建立 WXM-20261029-01 六件式任务包。",folder(WANG,"01-输入"),"王小明仓 · be86759"],
+ ["确认交付","王小明","形成 DOC-20261029-001《订单接口确认说明》。接口参数为教学模拟。",E.deliver,"王小明仓 · be86759"],
+ ["发送回执","王小明","回执单-20261029-001 关联原协同单，公共仓记录本轮交接。",E.receipt,"公共仓 · 467c300"],
+ ["人工验收","张若彤","VR-20261029-001 验收通过，保留两项待裁决问题。",E.acceptance,"张若彤仓 · 41f6cc7"],
+ ["看板对账","公共仓","核对协同单、回执、成果和知识入库的关联一致性。",E.board,"公共仓 · 199ac31"],
+ ["审核入库","张若彤","先审核再将 ZS-001 放入 current，审核与入库是两次提交。",E.knowledge,"公共仓 · 8cdf307 → d99915b"],
+ ["任务归档","两个人仓","双方任务包归档，形成从发起到知识沉淀的完整闭环。",E.brief,"张若彤 80635df / 王小明 bc4f9ad"]
+];
+const pageNames={overview:"项目总览",tasks:"任务看板",exchange:"交换区与单据",knowledge:"公共知识库",members:"成员与个人仓",demo:"协作模拟演示",quality:"规则校验",evidence:"GitHub 证据链"};
+let selectedStep=0;
+function go(page){
+ document.querySelectorAll(".page").forEach(e=>e.classList.toggle("active",e.id==="page-"+page));
+ document.querySelectorAll(".nav-btn").forEach(e=>e.classList.toggle("active",e.dataset.page===page));
+ document.getElementById("crumb").textContent=pageNames[page];
+ document.getElementById("sidebar").classList.remove("show");
+ window.scrollTo({top:0,behavior:"instant"});
+}
+document.querySelectorAll("[data-page]").forEach(e=>e.addEventListener("click",()=>go(e.dataset.page)));
+document.querySelectorAll("[data-go]").forEach(e=>e.addEventListener("click",()=>go(e.dataset.go)));
+document.getElementById("menu").addEventListener("click",()=>document.getElementById("sidebar").classList.toggle("show"));
+document.getElementById("role").addEventListener("change",e=>{
+ if(document.getElementById("page-demo").classList.contains("active"))return;
+ const v=e.target.value;
+ if(v==="all")go("overview");else go("members");
+});
+function showStep(i){
+ selectedStep=i;document.querySelectorAll("#stepper button").forEach((e,k)=>{e.classList.toggle("selected",k===i);e.classList.toggle("done",k<i);e.setAttribute("aria-pressed",String(k===i));});
+ const s=stepData[i];
+ document.getElementById("caseStepLabel").textContent="STEP "+String(i+1).padStart(2,"0")+" / "+s[1];
+ document.getElementById("caseStepTitle").textContent=s[0];
+ document.getElementById("caseStepDesc").textContent=s[2];
+ const a=document.getElementById("caseStepLink");a.href=s[3];a.textContent="查看 "+s[0]+" 文件证据 ↗";
+ document.getElementById("caseStepCommit").textContent=s[4];
+}
+document.getElementById("stepper").innerHTML=stepData.map((s,i)=>'<button type="button" aria-pressed="false" data-case-step="'+i+'"><i>'+(i+1)+'</i><span>'+s[0]+'</span></button>').join("");
+document.querySelectorAll("[data-case-step]").forEach(b=>b.addEventListener("click",()=>showStep(Number(b.dataset.caseStep))));showStep(0);
+const taskDetails={
+ zhang:{title:"ZRT-20261029-01 · 活动页面订单接口确认",owner:"张若彤",repo:"个人仓 02",deliver:"VR-20261029-001 · 验收结论",links:[[E.ztask,"任务包归档目录"],[E.acceptance,"验收结论"],[E.request,"原始协同单"]]},
+ wang:{title:"WXM-20261029-01 · 交易订单接口确认",owner:"王小明",repo:"个人仓 03",deliver:"DOC-20261029-001 · 订单接口确认说明",links:[[E.wtask,"任务包归档目录"],[E.deliver,"交付说明原件"],[E.receipt,"正式回执"]]}
+};
+document.querySelectorAll("[data-detail]").forEach(b=>b.addEventListener("click",()=>{
+ const t=taskDetails[b.dataset.detail];
+ const root=document.getElementById("taskDetail");
+ root.innerHTML='<div class="panel-title"><h2></h2><span class="badge green">已完成 · 已归档</span></div><div class="kv"><span>负责人</span><strong></strong></div><div class="kv"><span>所在工作区</span><strong></strong></div><div class="kv"><span>交付 / 验收</span><strong></strong></div><div class="line"></div><div id="taskProof"></div>';
+ root.querySelector("h2").textContent=t.title;root.querySelectorAll(".kv strong")[0].textContent=t.owner;root.querySelectorAll(".kv strong")[1].textContent=t.repo;root.querySelectorAll(".kv strong")[2].textContent=t.deliver;
+ const x=root.querySelector("#taskProof");t.links.forEach(([url,label],i)=>{if(i)x.append(" · ");const a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";a.className="proof-link";a.textContent=label+" ↗";x.append(a);});
+}));
+const requestHtml='<div class="kv"><span>单据编号</span><strong>协同单-20261029-001</strong></div><div class="kv"><span>发起 → 接收</span><strong>张若彤 → 王小明</strong></div><div class="kv"><span>需求</span><strong>确认订单接口字段清单、幂等与沙箱限流</strong></div><div class="kv"><span>状态</span><strong>已闭环（2026-10-29）</strong></div><p style="margin-top:17px"><a class="btn" href="'+E.request+'" target="_blank" rel="noopener">查看真实协同单 ↗</a></p>';
+const receiptHtml='<div class="kv"><span>单据编号</span><strong>回执单-20261029-001</strong></div><div class="kv"><span>发起 → 接收</span><strong>王小明 → 张若彤</strong></div><div class="kv"><span>关联</span><strong>回复 协同单-20261029-001</strong></div><div class="kv"><span>交付文件</span><strong>DOC-20261029-001 订单接口确认说明</strong></div><p style="margin-top:17px"><a class="btn" href="'+E.receipt+'" target="_blank" rel="noopener">查看真实回执 ↗</a></p>';
+const returnHtml='<div class="notice">本轮真实案例一次通过，没有生成退回单。公共仓提供了退回单模板，网页右侧“模拟演示”可以体验退回与修改，但不会伪造真实案例记录。</div><p style="margin-top:17px"><a class="btn" href="'+folder(PUBLIC,"02-协作契约/单据模板")+'" target="_blank" rel="noopener">查看退回单模板 ↗</a></p>';
+const exMap={request:requestHtml,receipt:receiptHtml,return:returnHtml};
+function showEx(key){document.querySelectorAll("#exchangeTabs button").forEach(b=>b.classList.toggle("active",b.dataset.ex===key));document.getElementById("exchangeBody").innerHTML=exMap[key];}
+document.querySelectorAll("#exchangeTabs button").forEach(b=>b.addEventListener("click",()=>showEx(b.dataset.ex)));showEx("request");
+const ruleData=[
+["R1","YAML 头、字段格式和重复字段"],["R2","必填字段与日期合法性"],["R3","合法类型和编号前缀"],["R4","状态取值和编号格式"],["R5","单据编号不可重复"],["R6","成员名册、角色分离"],["R7","关联任务、交付文件存在"],["R8","文件所在目录符合协议"],["R9","知识正式发布需审核证据"]
+];
+document.getElementById("rules").innerHTML=ruleData.map(([n,t])=>'<div class="rule"><b>'+n+'</b><p>'+t+'</p></div>').join("");
+const testData=[["A","合法协同单","正常放行"],["B","缺少发起人","R2 阻止"],["C","接收人不在成员名册","R6 阻止"],["D","未经审核写入 current","R9 阻止"],["E","单据编号格式错误","R4 阻止"],["F","类型写为非法枚举","R3 阻止"]];
+document.getElementById("tests").innerHTML=testData.map(x=>'<div class="check"><b>'+x[0]+' · '+x[1]+'</b><small>本地临时克隆环境中的真实测试记录</small><br><span class="badge '+(x[0]==="A"?"green":"amber")+'">'+x[2]+'</span></div>').join("");
+const proofData=[
+["项目总览与十步协作案例","展示三仓的任务流转与提交对应关系",E.brief],
+["公共任务看板","两条已归档任务和两项待裁决问题",E.board],
+["协同单原件","张若彤发起、王小明接收",E.request],
+["回执单原件","王小明交付、关联原始协同单",E.receipt],
+["交易订单接口说明","教学模拟接口字段及主要错误码",E.deliver],
+["验收结论","张若彤验收记录",E.acceptance],
+["ZS-001 正式知识","知识审核生效后的 current 内容",E.knowledge],
+["校验器 validate.py","公开仓记录的九类确定性校验",E.validator],
+["Git pre-commit Hook","提交前触发校验的脚本",E.hook],
+["稳定性测试报告","六组测试、中文路径与管道问题排查",E.tests]
+];
+document.getElementById("proofs").innerHTML=proofData.map(([name,desc,url])=>'<article class="card"><h3>'+name+'</h3><p style="color:var(--muted);font-size:11px;margin:9px 0">'+desc+'</p><a class="proof-link" target="_blank" rel="noopener" href="'+url+'">查看源文件 ↗</a></article>').join("");
+// The following is an in-browser sandbox. It is deliberately disconnected from GitHub and Agent services.
+const STORE="earlybird_workbench_demo_v2";
+let sim={phase:"draft",name:"",desc:"",logs:[],isReturned:false};
+try{const saved=JSON.parse(sessionStorage.getItem(STORE));if(saved&&saved.phase)sim=saved;}catch(e){}
+function save(){try{sessionStorage.setItem(STORE,JSON.stringify(sim));}catch(e){}}
+function addLog(actor,title,desc){sim.logs.unshift({actor,title,desc});save();}
+function simulate(action){
+ const allowed={draft:["send"],sent:["accept","return"],returned:["resend"],accepted:["reply"],replied:["approve","reject"],rejected:["reply"],approved:["publish"],published:[]};
+ if(!(allowed[sim.phase]||[]).includes(action))return;
+ switch(action){
+  case"send":sim.name=document.getElementById("simTitle").value.trim();sim.desc=document.getElementById("simDesc").value.trim();if(!sim.name||!sim.desc){alert("请填写协同主题与任务说明。");return;}sim.phase="sent";addLog("张若彤","发起模拟协同单",sim.name);break;
+  case"accept":sim.phase="accepted";addLog("王小明","接收模拟协同单","在个人任务区建立执行记录。");break;
+  case"return":sim.phase="returned";sim.isReturned=true;addLog("王小明","退回补充信息（模拟）","要求补充订单接口约束信息；本步骤未出现在真实案例里。");break;
+  case"resend":sim.phase="sent";addLog("张若彤","重新发出模拟协同单","补充了接收人需要的信息。");break;
+  case"reply":sim.phase="replied";addLog("王小明","提交回执与交付物（模拟）","交付订单字段说明，等待人工验收。");break;
+  case"approve":sim.phase="approved";addLog("张若彤","人工验收通过（模拟）","确认交付物可进入公共知识审核步骤。");break;
+  case"reject":sim.phase="rejected";addLog("张若彤","验收退回（模拟）","要求重新提交说明。");break;
+  case"publish":sim.phase="published";addLog("张若彤","人工审核并模拟入库","展示 current 生效规则；没有写入真实 Git 仓。");break;
+ }
+ renderSim();
+}
+const names={draft:"待创建",sent:"待领取",returned:"已退回",accepted:"进行中",replied:"待验收",rejected:"需修改",approved:"待知识入库",published:"模拟已闭环"};
+const hints={sent:"请切换到王小明的视角并选择接收，或体验退回。",returned:"请切换回张若彤，补充说明并重新发起。",accepted:"王小明在个人仓完成工作后提交回执。",replied:"请切换到张若彤完成验收，或退回重做。",rejected:"王小明修改交付物后重新提交回执。",approved:"验收通过，还需要单独完成公共知识审核与入库。",published:"模拟链路已经完成。你可以重置后重新演示另一条分支。"};
+function renderSim(){
+ const isDraft=sim.phase==="draft";
+ document.getElementById("simEntry").hidden=!isDraft;
+ document.getElementById("simControls").hidden=isDraft;
+ document.getElementById("simStatus").textContent=names[sim.phase];
+ document.getElementById("simSubtitle").textContent=isDraft?"还没有发起协同单":"演示-协同单-001 · "+names[sim.phase];
+ document.getElementById("simTaskName").textContent=sim.name;
+ document.getElementById("simStageName").textContent=names[sim.phase];
+ const role=document.getElementById("role").value;
+ document.getElementById("simHelp").textContent=(hints[sim.phase]||"")+"  当前视角："+({all:"公共视角",zhang:"张若彤",wang:"王小明"}[role]);
+ const actions=document.getElementById("simActions");actions.replaceChildren();
+ const candidates={
+  sent:[["wang","accept","王小明 · 接收任务"],["wang","return","王小明 · 退回信息"]],
+  returned:[["zhang","resend","张若彤 · 补充并重发"]],
+  accepted:[["wang","reply","王小明 · 提交回执"]],
+  replied:[["zhang","approve","张若彤 · 验收通过"],["zhang","reject","张若彤 · 退回修改"]],
+  rejected:[["wang","reply","王小明 · 再次提交回执"]],
+  approved:[["zhang","publish","张若彤 · 审核并入库"]]
+ }[sim.phase]||[];
+ candidates.forEach(([required,action,label])=>{
+  const b=document.createElement("button");b.className="btn "+(action==="return"||action==="reject"?"red":"primary");
+  b.textContent=label;b.disabled=role!==required;b.title=b.disabled?"请在右上角切换到 "+(required==="zhang"?"张若彤":"王小明")+" 视角":"";
+  b.addEventListener("click",()=>simulate(action));actions.appendChild(b);
+ });
+ const log=document.getElementById("simLog");log.replaceChildren();
+ if(!sim.logs.length){const t=document.createElement("div");t.className="notice";t.textContent="先在左侧创建模拟协同单。";log.appendChild(t);}
+ else sim.logs.forEach(x=>{const r=document.createElement("div");r.className="log-row";const title=document.createElement("strong");title.textContent=x.actor+" · "+x.title;const p=document.createElement("p");p.textContent=x.desc;r.append(title,p);log.appendChild(r);});
+}
+document.getElementById("simSend").addEventListener("click",()=>simulate("send"));
+document.getElementById("resetDemo").addEventListener("click",()=>{sim={phase:"draft",name:"",desc:"",logs:[],isReturned:false};save();renderSim();});
+document.getElementById("role").addEventListener("change",renderSim);
+renderSim();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"45c2bf8136a245cd97f1c2e9a96c0730","spa":2}' crossorigin="anonymous"></script>
+</body></html>
