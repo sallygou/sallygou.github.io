@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="AI Native 多角色协作工作台 PoC 可视化项目展示，包含多仓架构、协作流程、网页端校验示范、项目边界和学习轨迹。">
+  <meta name="color-scheme" content="light">
+  <title>AI Native Lab · 项目可视化作品集</title>
+  <style>
+    :root {
+      --ink:#142333; --ink2:#233449; --paper:#f6f6f2; --white:#fff;
+      --muted:#667586; --line:#dbe2e6; --accent:#3868e8; --accent2:#f48d59;
+      --mint:#96e8c3; --mint-ink:#185e49; --surface:#edf1f4; --red:#c84c50;
+      --radius:20px; --shadow:0 19px 56px rgba(20,35,51,.08);
+    }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:15px/1.72 -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif; }
+    a { color:inherit; text-decoration:none; }
+    button, textarea { font:inherit; }
+    button { cursor:pointer; }
+    ::selection { background:#c6d5ff; color:var(--ink); }
+    :focus-visible { outline:3px solid var(--accent2); outline-offset:3px; }
+    .wrap { width:min(1176px,calc(100% - 48px)); margin:auto; }
+    .label { font-size:11px; font-weight:800; letter-spacing:.19em; text-transform:uppercase; color:var(--accent); }
+    .eyebrow { text-transform:uppercase; letter-spacing:.18em; font-size:10px; font-weight:800; }
+    .nav { height:74px; background:rgba(248,249,248,.95); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:100; backdrop-filter:blur(13px); }
+    .navinner { display:flex; align-items:center; justify-content:space-between; height:100%; gap:18px; }
+    .brand { display:flex; align-items:center; gap:11px; font-weight:900; font-size:16px; letter-spacing:-.05em; white-space:nowrap; }
+    .brandmark { height:36px; width:36px; background:var(--ink); border-radius:12px; display:grid; place-items:center; }
+    .brandmark svg { width:26px; height:26px; }
+    .navlinks { display:flex; align-items:center; gap:24px; font-size:12px; color:#46576b; font-weight:700; }
+    .navlinks a:hover { color:var(--accent); }
+    .navcta { background:var(--ink); color:white; border-radius:999px; padding:9px 18px; white-space:nowrap; font-size:12px; font-weight:800; }
+    .menu { display:none; border:1px solid var(--line); background:white; border-radius:10px; padding:6px 11px; }
+    .hero { background:#101e2d; color:white; position:relative; overflow:hidden; }
+    .hero::before { content:""; position:absolute; inset:0; opacity:.2; pointer-events:none; background:radial-gradient(circle at 85% 40%,#6594f6 0,transparent 34%),radial-gradient(circle at 5% 90%,#4ba48a 0,transparent 34%); }
+    .hero::after { content:""; position:absolute; width:370px;height:370px; border:1px solid rgba(191,220,247,.11); border-radius:50%; right:-60px; top:-135px; box-shadow:0 0 0 75px rgba(140,174,213,.035),0 0 0 150px rgba(140,174,213,.025); pointer-events:none; }
+    .hero-grid { position:relative; display:grid; grid-template-columns:1.05fr .95fr; align-items:center; gap:48px; min-height:530px; padding:75px 0 81px; }
+    .kicker { display:flex; align-items:center; gap:12px; color:#b1cae4; font-size:11px; font-weight:800; letter-spacing:.12em; }
+    .live-dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:var(--mint); box-shadow:0 0 0 5px rgba(150,232,195,.12); }
+    h1,h2,h3,p { margin-top:0; }
+    h1 { font-size:clamp(37px,4.6vw,63px); letter-spacing:-.06em; line-height:1.17; margin:23px 0; font-weight:850; }
+    h1 strong { color:#acd5ff; font-weight:850; }
+    .hero-desc { color:#bbccdb; font-size:15px; line-height:1.95; max-width:520px; margin-bottom:30px; }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:11px; font-size:13px; font-weight:800; border:1px solid transparent; transition:transform .2s,background .2s,border .2s; }
+    .btn:hover { transform:translateY(-2px); }
+    .btn-primary { color:#13263a; background:var(--mint); }
+    .btn-outline { background:transparent; color:white; border-color:#728398; }
+    .btn-dark { color:white; background:var(--ink); }
+    .hero-note { display:flex; align-items:center; gap:7px; margin-top:26px; color:#9bafc3; font-size:11px; }
+    .terminal { background:#152a3c; border:1px solid rgba(173,216,245,.26); border-radius:19px; box-shadow:0 35px 110px rgba(0,0,0,.3); overflow:hidden; transform:rotate(1deg); }
+    .terminal-head { background:#1b3448; border-bottom:1px solid rgba(215,235,245,.13); padding:13px 17px; display:flex; align-items:center; justify-content:space-between; color:#b3c7d9; font-size:11px; }
+    .dots { display:flex; gap:6px; } .dots i { display:block; width:8px; height:8px; border-radius:50%; background:#f18c80; } .dots i:nth-child(2){background:#f1c47a}.dots i:nth-child(3){background:#91dbb2}
+    .terminal-body { padding:28px 25px 27px; font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size:12px; color:#d2e5ed; line-height:2.15; }
+    .prompt { color:#83c8ff; }.path { color:#f4ba85; }.muted-code { color:#829aa9; }.success { color:#9cedbe; }
+    .flow-lines { padding-top:18px; display:flex; flex-wrap:wrap; gap:9px; align-items:center; font-family:inherit; font-size:11px; }
+    .code-chip { border:1px solid #466075; padding:7px 9px; border-radius:7px; color:#dfebf2; }
+    .code-arr { color:var(--mint); }
+    .metrics { position:relative; margin-top:-29px; z-index:2; display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .metric { border:1px solid #e0e6e6; border-radius:17px; background:white; padding:21px 25px; box-shadow:var(--shadow); }
+    .metric strong { display:block; font-weight:850; font-size:31px; letter-spacing:-.06em; line-height:1.3; }
+    .metric span { color:var(--muted); font-size:12px; }
+    section { padding:94px 0 0; scroll-margin-top:85px; }
+    .section-heading { display:flex; justify-content:space-between; align-items:end; gap:28px; margin-bottom:28px; }
+    .section-heading h2 { margin:10px 0 0; font-size:clamp(28px,3vw,39px); font-weight:850; letter-spacing:-.055em; line-height:1.28; }
+    .section-heading p { max-width:460px; color:var(--muted); font-size:13px; margin:0; }
+    .pill { display:inline-flex; align-items:center; padding:5px 11px; border-radius:30px; background:#e8eefc; color:#2856bb; font-size:11px; font-weight:800; }
+    .pill.light { color:#31745d; background:#e4f5ec; }
+    .surface { border:1px solid var(--line); border-radius:21px; background:white; box-shadow:0 6px 30px rgba(25,44,62,.035); }
+    .diagram-box { padding:35px; }
+    .diagram-top { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:25px; }
+    .diagram-top h3 { font-size:15px; margin:0; }
+    .repo-grid { display:grid; grid-template-columns:1fr 58px 1fr 58px 1fr; gap:0; align-items:center; }
+    .repo { width:100%; min-height:180px; text-align:left; background:#f7f9fb; border:2px solid #e2e9ed; border-radius:15px; padding:21px 17px; transition:.2s; color:var(--ink); }
+    .repo:hover { background:#f2f6fe; }
+    .repo.active { background:#edf2ff; border-color:var(--accent); box-shadow:0 8px 24px rgba(54,104,232,.08); }
+    .repo .repo-icon { display:grid; place-items:center; background:#e3ebff; height:36px; width:36px; border-radius:9px; font-size:18px; margin-bottom:12px; }
+    .repo b { font-size:14px; display:block; margin-bottom:6px; }
+    .repo small { color:var(--muted); font-size:11px; }
+    .repo-arrows { display:flex; align-items:center; justify-content:center; flex-direction:column; color:#7d96ad; font-size:19px; gap:0; line-height:1.2; }
+    .repo-arrows small { font-size:9px; font-weight:700; }
+    .detail { display:grid; grid-template-columns:1fr 1fr; gap:21px; padding-top:27px; border-top:1px solid var(--line); margin-top:27px; }
+    .detail h3 { font-size:21px; margin:3px 0 7px; letter-spacing:-.04em; }
+    .detail p { color:var(--muted); font-size:13px; margin-bottom:0; }
+    .file-list { background:#f4f6f8; border-radius:12px; padding:15px 17px; font:12px/2 ui-monospace,SFMono-Regular,Consolas,monospace; color:#375169; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .workflow { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:9px; }
+    .step { background:#fff; border:1px solid var(--line); border-radius:15px; padding:15px 11px; text-align:left; min-height:129px; transition:.2s; }
+    .step:hover { border-color:#8fafe9; }
+    .step.active { border-color:var(--accent); background:#eef3ff; }
+    .step-number { font:800 11px ui-monospace,monospace; color:var(--accent); display:block; margin-bottom:9px; }
+    .step b { display:block; font-size:12px; line-height:1.65; }
+    .step span { display:block; color:var(--muted); font-size:10px; margin-top:5px; }
+    .stage-preview { display:grid; grid-template-columns:1fr 1.05fr; gap:20px; background:#192b3d; color:white; padding:28px; border-radius:20px; margin-top:14px; }
+    .stage-preview h3 { font-size:22px; margin:10px 0 8px; }
+    .stage-preview p { color:#b7c7d6; font-size:13px; margin-bottom:0; }
+    .stage-preview .subnote { margin-top:18px; display:inline-flex; padding:7px 10px; border-radius:8px; color:#d5f2de; background:#284a49; font-size:11px; }
+    .stage-preview pre { margin:0; border:1px solid #35526a; border-radius:12px; background:#112333; color:#bde8d2; overflow:auto; padding:17px; font:11px/1.7 ui-monospace,SFMono-Regular,monospace; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .validator { display:grid; grid-template-columns:1.05fr .95fr; gap:22px; }
+    .editor { overflow:hidden; }
+    .editor-head { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; background:#eaf0f3; border-bottom:1px solid var(--line); font-size:12px; font-weight:800; }
+    .editor textarea { display:block; width:100%; min-height:308px; resize:vertical; outline:0; border:0; padding:21px; background:#152738; color:#d3eadb; font:12px/1.9 ui-monospace,SFMono-Regular,Consolas,monospace; }
+    .editor textarea:focus-visible { box-shadow:inset 0 0 0 3px #7697fc; }
+    .editor-foot { padding:15px 18px; border-top:1px solid var(--line); display:flex; gap:7px; flex-wrap:wrap; background:white; }
+    .small-btn { border:1px solid #ccd6dd; border-radius:9px; padding:7px 10px; background:white; font-size:11px; font-weight:750; color:#42566a; }
+    .small-btn:hover { background:#eef2f6; }
+    .result { padding:26px; display:flex; flex-direction:column; }
+    .result h3 { margin-bottom:8px; font-size:22px; letter-spacing:-.04em; }
+    .result p { color:var(--muted); font-size:12px; }
+    .run { border:0; background:var(--accent); color:white; padding:12px 18px; border-radius:9px; font-size:12px; font-weight:800; align-self:start; margin-top:2px; }
+    .check-result { background:#f3f7fa; border-radius:12px; padding:17px; margin-top:20px; min-height:130px; font-size:12px; color:#556779; }
+    .check-result.good { background:#e7f7ee; color:#1d6752; }
+    .check-result.bad { background:#fff0ee; color:#a44b41; }
+    .check-result h4 { font-size:14px; margin:0 0 9px; }
+    .check-result ul { margin:0; padding-left:19px; }
+    .validator-note { margin-top:12px; color:var(--muted); font-size:11px; }
+    .project-link { margin-top:17px; font-size:11px; font-weight:800; color:var(--accent); }
+    .project-link a { text-decoration:underline; text-underline-offset:3px; }
+    .repo-href { display:inline-block; margin-top:13px; font-size:11px; color:#3868e8; font-weight:800; }
+    .repo-href a { text-decoration:underline; text-underline-offset:3px; }
+    .feature-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .feature { padding:25px; min-height:261px; }
+    .feature-num { color:var(--accent); font:800 11px ui-monospace,monospace; display:block; margin-bottom:22px; }
+    .feature h3 { font-size:19px; margin-bottom:9px; letter-spacing:-.03em; }
+    .feature p { font-size:12px; color:var(--muted); }
+    .tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:16px; }
+    .tag { border:1px solid #d8e0e5; color:#536b7e; font-size:10px; border-radius:6px; padding:3px 7px; background:#f9fafb; }
+    .boundaries { background:#eaf0f3; border:1px solid var(--line); border-radius:19px; padding:30px; display:grid; grid-template-columns:1fr 1fr; gap:35px; }
+    .boundaries h3 { margin:0 0 16px; font-size:17px; }
+    .boundary-item { padding-left:19px; position:relative; color:#45586a; margin-bottom:12px; font-size:13px; }
+    .boundary-item::before { content:"✓"; position:absolute; left:0; top:0; font-weight:bold; color:#1e8c65; }
+    .boundary-item.caution::before { content:"—"; color:#aa6a3b; }
+    .roadmap { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .road { padding:25px; background:#fff; border:1px solid var(--line); border-radius:17px; }
+    .road span { display:inline-block; font-size:11px; font-weight:800; color:#4270b5; margin-bottom:8px; }
+    .road h3 { font-size:18px; margin-bottom:6px; }
+    .road p { margin:0; color:var(--muted); font-size:12px; }
+    .closing { margin-top:95px; background:#14283a; padding:50px 0; color:white; }
+    .closing-inner { display:flex; justify-content:space-between; align-items:center; gap:30px; }
+    .closing h2 { font-size:29px; letter-spacing:-.05em; margin:0 0 10px; }
+    .closing p { color:#b7c8d8; max-width:560px; margin:0; font-size:13px; }
+    .footer { background:#102131; padding:22px 0; color:#93a9bd; font-size:11px; }
+    .foot-inner { display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; }
+    #repoLinks { display:none; }
+    .emphasis { color:#2361c5; font-weight:750; }
+    @media(max-width:900px) {
+      .navlinks { gap:11px; } .hero-grid { gap:22px; }
+      .repo-grid { grid-template-columns:1fr 35px 1fr 35px 1fr; } .repo { padding:12px; }
+      .workflow { grid-template-columns:repeat(3,1fr); }
+      .feature-grid { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:690px) {
+      .wrap { width:min(100% - 30px,1176px); }
+      .nav { height:65px; }
+      .navlinks { display:none; position:absolute; left:14px; right:14px; top:65px; background:white; box-shadow:var(--shadow); border:1px solid var(--line); padding:16px; border-radius:12px; flex-direction:column; align-items:flex-start; gap:13px; }
+      .navlinks.open { display:flex; }
+      .menu { display:block; }
+      .navcta { display:none; }
+      .hero-grid { grid-template-columns:1fr; min-height:auto; padding:65px 0 75px; gap:32px; }
+      .hero h1 { font-size:40px; }
+      .hero-desc { font-size:14px; }
+      .terminal { transform:none; }
+      .metrics { grid-template-columns:repeat(2,1fr); margin-top:-35px; gap:8px; }
+      .metric { padding:17px; } .metric strong { font-size:27px; }
+      section { padding-top:64px; }
+      .section-heading { display:block; } .section-heading p { margin-top:12px; }
+      .diagram-box { padding:18px; }
+      .repo-grid { grid-template-columns:1fr; }
+      .repo-arrows { transform:rotate(90deg); margin:0; height:29px; }
+      .repo-arrows small { display:none; }
+      .repo { min-height:auto; }
+      .detail { grid-template-columns:1fr; gap:13px; }
+      .workflow { grid-template-columns:repeat(2,1fr); }
+      .stage-preview,.validator,.boundaries { grid-template-columns:1fr; }
+      .feature-grid,.roadmap { grid-template-columns:1fr; }
+      .feature { min-height:auto; }
+      .closing-inner { display:block; }
+      .closing .actions { margin-top:20px; }
+    }
+    @media(prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } * { transition:none!important; animation:none!important; } }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap navinner">
+      <a class="brand" href="#top" aria-label="返回顶部">
+        <span class="brandmark">
+          <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M7 8L20 14L7 21" stroke="#8ce0bb" stroke-width="2"/><circle cx="7" cy="8" r="3" fill="#fff"/><circle cx="20" cy="14" r="3" fill="#9cbafa"/><circle cx="7" cy="21" r="3" fill="#f6a17d"/></svg>
+        </span>
+        <span>AI NATIVE <span style="color:#4269c8">/ LAB</span></span>
+      </a>
+      <nav class="navlinks" id="navlinks" aria-label="主导航">
+        <a href="#architecture">协作架构</a>
+        <a href="#workflow">流程演示</a>
+        <a href="#validation">校验实验室</a>
+        <a href="#projects">相关项目</a>
+        <a href="#boundaries">项目边界</a>
+      </nav>
+      <a class="navcta" href="#validation">体验交互演示 ↗</a>
+      <button class="menu" type="button" id="menu" aria-label="展开导航" aria-expanded="false">☰</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <div class="kicker"><span class="live-dot"></span> AI NATIVE / PORTFOLIO / OCT 2026</div>
+          <h1>从任务文件<br>到<span style="color:#9bd8bf">可验证</span>的<br><strong>多角色协作</strong></h1>
+          <p class="hero-desc">把 Git 仓库变成结构化的 AI 协作工作区。以协同单、任务包、校验脚本和人工审核，探索可以追溯、可以交接、可以解释的工作流。</p>
+          <div class="actions">
+            <a class="btn btn-primary" href="#architecture">探索项目架构 <span aria-hidden="true">↗</span></a>
+            <a class="btn btn-outline" href="https://github.com/sallygou/01--early-bird--public" target="_blank" rel="noopener noreferrer">查看真实 GitHub 仓库 <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="hero-note">● 课程实践 PoC · 可视化展示网页 · 非真实自主运行的多 Agent 系统</p>
+        </div>
+        <div class="terminal" aria-label="协作项目结构示意">
+          <div class="terminal-head"><span class="dots"><i></i><i></i><i></i></span><span>workspace / structure preview</span><span>◫</span></div>
+          <div class="terminal-body">
+            <div><span class="prompt">➜</span> <span class="path">ai-native-workspace/</span></div>
+            <div>　├── <span class="path">shared-repo/</span> <span class="muted-code"># 公共知识与协作</span></div>
+            <div>　│　├── tasks/</div>
+            <div>　│　├── handoffs/</div>
+            <div>　│　└── knowledge/</div>
+            <div>　├── <span class="path">member-a/</span> <span class="muted-code"># 成员独立执行</span></div>
+            <div>　├── <span class="path">member-b/</span> <span class="muted-code"># 成员独立执行</span></div>
+            <div>　└── validator/ <span class="muted-code"># 规则校验</span></div>
+            <div style="padding-top:12px"><span class="success">✓</span> <span class="success">结构化协作 · 人工审核 · 版本留痕</span></div>
+            <div class="flow-lines">
+              <span class="code-chip">task.md</span><span class="code-arr">→</span>
+              <span class="code-chip">handoff.md</span><span class="code-arr">→</span>
+              <span class="code-chip">review.md</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wrap metrics" aria-label="项目资料中已记录的规模">
+      <div class="metric"><strong>03</strong><span>公开 GitHub 仓库（1 公共 + 2 模拟个人）</span></div>
+      <div class="metric"><strong>03</strong><span>标准化协作单据类型</span></div>
+      <div class="metric"><strong>06</strong><span>任务包组成部分</span></div>
+      <div class="metric"><strong>08</strong><span>公共仓作业展示文档</span></div>
+    </div>
+
+    <section id="architecture" class="wrap">
+      <div class="section-heading">
+        <div><span class="label">01 / SYSTEM MAP</span><h2>多仓库协作架构</h2></div>
+        <p>用 1 个公共协作仓和 2 个模拟成员仓，隔离共享知识与个人执行过程。点击不同仓库，查看它们在 PoC 中的职责。</p>
+      </div>
+      <div class="surface diagram-box">
+        <div class="diagram-top"><h3>Git 作为共享事实与版本记录底座</h3><span class="pill">交互式结构图</span></div>
+        <div class="repo-grid" id="repo-grid">
+          <button class="repo active" type="button" data-repo="shared" aria-pressed="true"><span class="repo-icon">▦</span><b>公共协作仓</b><small>Shared Repository<br>团队任务 / 协作协议 / 知识</small></button>
+          <div class="repo-arrows" aria-hidden="true">↔<small>协同单</small></div>
+          <button class="repo" type="button" data-repo="a" aria-pressed="false"><span class="repo-icon">◈</span><b>个人仓 A</b><small>Member Workspace A<br>独立处理 / 过程记录 / 回执</small></button>
+          <div class="repo-arrows" aria-hidden="true">↔<small>跨仓交接</small></div>
+          <button class="repo" type="button" data-repo="b" aria-pressed="false"><span class="repo-icon">◇</span><b>个人仓 B</b><small>Member Workspace B<br>模拟协同 / 审核 / 反馈</small></button>
+        </div>
+        <div class="detail" aria-live="polite">
+          <div>
+            <span class="eyebrow" style="color:#4267b8">SELECTED REPOSITORY</span>
+            <h3 id="repoTitle">公共协作仓 · Shared</h3>
+            <p id="repoDesc">沉淀团队共享任务、结构化协作单据和审核后知识。约束任务交接格式，降低多角色沟通中的上下文丢失风险。</p>
+            <p style="margin-top:12px"><span class="pill light" id="repoBadge">团队共享</span></p>
+            <div class="repo-href" id="repoExternal">真实仓库链接待配置</div>
+          </div>
+          <div class="file-list" id="repoFiles">tasks/              # 公共任务看板
+handoffs/           # 协同单与回执
+knowledge/current/  # 已审核知识
+knowledge/history/  # 历史版本</div>
+        </div>
+        <p class="validator-note">仓库目录已根据公开 README 校对，可能与具体子目录的最新状态有差异。功能演示仍是教学用抽象，不是实时读取仓库。</p>
+      </div>
+    </section>
+
+    <section id="workflow" class="wrap">
+      <div class="section-heading">
+        <div><span class="label">02 / WORKFLOW</span><h2>一个任务如何完成协作闭环？</h2></div>
+        <p>从任务发起到人工验收，把协作过程拆成可追踪的文件状态。点击任一节点，查看对应的职责、输出和示例。</p>
+      </div>
+      <div class="workflow" id="steps" aria-label="可选择的工作流阶段">
+        <button type="button" class="step active" data-step="0" aria-pressed="true"><span class="step-number">STEP 01</span><b>创建任务</b><span>定义目标与边界</span></button>
+        <button type="button" class="step" data-step="1" aria-pressed="false"><span class="step-number">STEP 02</span><b>发送协同单</b><span>明确请求与负责人</span></button>
+        <button type="button" class="step" data-step="2" aria-pressed="false"><span class="step-number">STEP 03</span><b>成员执行</b><span>个人仓推进和留痕</span></button>
+        <button type="button" class="step" data-step="3" aria-pressed="false"><span class="step-number">STEP 04</span><b>提交回执</b><span>交付或说明退回原因</span></button>
+        <button type="button" class="step" data-step="4" aria-pressed="false"><span class="step-number">STEP 05</span><b>规则校验</b><span>结构化字段先检查</span></button>
+        <button type="button" class="step" data-step="5" aria-pressed="false"><span class="step-number">STEP 06</span><b>人工验收</b><span>审核后归档知识</span></button>
+      </div>
+      <div class="stage-preview" aria-live="polite">
+        <div>
+          <span class="eyebrow" style="color:#9bc6f8" id="stepNum">STEP 01 / TASK</span>
+          <h3 id="stepTitle">定义任务与验收条件</h3>
+          <p id="stepDesc">先写清任务目标、输入材料、输出成果、相关角色和人工验收标准，而不是让 Agent 直接从模糊指令开始行动。</p>
+          <span class="subnote" id="stepTip">关键原则：任务先结构化，再执行。</span>
+        </div>
+        <pre id="stepCode"># 示例：task.md
+task_id: TASK-APPLE-01
+goal: 梳理活动交互状态
+owner: member-a
+status: draft</pre>
+      </div>
+      <p class="validator-note">这里是用于解释协作机制的前端交互演示，不会创建真实 GitHub 提交或调度 Agent。</p>
+    </section>
+
+    <section id="validation" class="wrap">
+      <div class="section-heading">
+        <div><span class="label">03 / TRY IT</span><h2>规则校验 · 网页端实验室</h2></div>
+        <p>AI 生成灵活，校验规则需要确定。试着删除一个必填字段，亲自观察结构化单据怎样被检查。</p>
+      </div>
+      <div class="validator">
+        <div class="surface editor">
+          <div class="editor-head"><span>▧ demo-handoff.md</span><span style="color:#778797">YAML front matter</span></div>
+          <textarea id="yaml" spellcheck="false" aria-label="可编辑的 YAML front matter 示例">---
+document_type: request
+document_id: DOC-001
+task_id: TASK-APPLE-01
+owner: member-a
+status: submitted
+---
+# 活动平台与交易系统协同任务
+请核对预约状态信息的交接需求。</textarea>
+          <div class="editor-foot">
+            <button type="button" class="small-btn" data-case="ok">✓ 合格示例</button>
+            <button type="button" class="small-btn" data-case="missing">× 缺少字段</button>
+            <button type="button" class="small-btn" data-case="relation">× 回执缺少关联</button>
+          </div>
+        </div>
+        <div class="surface result">
+          <span class="label">VALIDATION SANDBOX</span>
+          <h3>把「感觉没问题」变成「有规则可检查」</h3>
+          <p>本网页使用 JavaScript 实现简单的字段校验，帮助面试官直观看到规则设计的思路。</p>
+          <button type="button" class="run" id="run">▶ 运行校验</button>
+          <div class="check-result" id="checkResult" aria-live="polite"><h4>等待运行</h4>请选择示例或修改左侧内容，再点击“运行校验”。</div>
+          <p class="validator-note">⚠ 这是简化的前端演示，不是你 Git 仓库里 Python 脚本或 pre-commit Hook 的真实执行结果，也不是完整 YAML 解析器。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="wrap">
+      <div class="section-heading">
+        <div><span class="label">04 / PROJECT COLLECTION</span><h2>同一条学习路径上的三个作品</h2></div>
+        <p>不是将课程内容冒充实际开发，而是按证据强度展示个人实践、协作 PoC 和业务案例研究的不同层级。</p>
+      </div>
+      <div class="feature-grid">
+        <article class="surface feature">
+          <span class="feature-num">01 / PERSONAL WORKSPACE</span>
+          <h3>AI Native 个人工作台</h3>
+          <span class="pill light">实践记录</span>
+          <p style="margin-top:15px">通过 WorkBuddy、Skill 与 AGENTS.md 组织项目、任务、资料、交付和日志。课程资料记录了任务创建、多轮修订、人工验收及归档过程。</p>
+          <div class="tags"><span class="tag">WorkBuddy</span><span class="tag">Skill</span><span class="tag">AGENTS.md</span><span class="tag">10 项验收条目</span></div><div class="project-link" data-link="workspace">项目仓库链接待配置</div>
+        </article>
+        <article class="surface feature">
+          <span class="feature-num">02 / FEATURED PROOF OF CONCEPT</span>
+          <h3>Git 多角色协作工作台</h3>
+          <span class="pill">核心 PoC</span>
+          <p style="margin-top:15px">1 公共仓 + 2 模拟个人仓，结合协同单、回执、退回单、Python 规则检查与 Git Hook，尝试标准化任务交接。</p>
+          <div class="tags"><span class="tag">Git / GitHub</span><span class="tag">YAML</span><span class="tag">Python</span><span class="tag">pre-commit</span></div><div class="project-link" data-link="shared">项目仓库链接待配置</div>
+        </article>
+        <article class="surface feature">
+          <span class="feature-num">03 / PRODUCT RESEARCH</span>
+          <h3>Apple 早鸟活动页设计研究</h3>
+          <span class="pill light">课程案例研究</span>
+          <p style="margin-top:15px">借助 ChatGPT 分析课程截图、业务流程、系统依赖、七模块信息架构及八项产品设计方法，重点关注用户状态和克制表达。</p>
+          <div class="tags"><span class="tag">ChatGPT</span><span class="tag">User Flow</span><span class="tag">API 概念</span><span class="tag">UX Writing</span></div><div class="project-link" data-link="research">案例笔记仓库链接待配置</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="boundaries" class="wrap">
+      <div class="section-heading">
+        <div><span class="label">05 / EVIDENCE & SCOPE</span><h2>实践证据与能力边界</h2></div>
+        <p>可信的工程展示不只讲亮点，也交代原型在哪个阶段、哪些能力尚未实现。</p>
+      </div>
+      <div class="boundaries">
+        <div>
+          <h3>✓ 资料中记录的已完成工作</h3>
+          <div class="boundary-item">三个公开 GitHub 仓库的搭建与发布</div>
+          <div class="boundary-item">协同单 / 回执 / 退回单三类文件协议</div>
+          <div class="boundary-item">六件式任务包与知识审核规则</div>
+          <div class="boundary-item">Python 校验与 Git Hook 实践记录</div>
+          <div class="boundary-item">八份展示文档与个人工作台验收记录</div>
+        </div>
+        <div>
+          <h3>— 本阶段不宣称的能力</h3>
+          <div class="boundary-item caution">不宣称已上线生产级多 Agent 服务</div>
+          <div class="boundary-item caution">不宣称多个 Agent 已实现实时自主调度</div>
+          <div class="boundary-item caution">不把网页端演示当作真实 Git Hook 运行</div>
+          <div class="boundary-item caution">不将课堂 Apple 案例写成商业项目负责经历</div>
+          <div class="boundary-item caution">没有真实数据的效率提升不写百分比</div>
+        </div>
+      </div>
+      <p class="validator-note">上述实践描述来自已提供的项目学习材料，已公开的三个 GitHub 仓库链接可供核对。正式公开前仍应对照真实代码、提交记录和测试文档核实展示内容，并删除敏感内容。</p>
+    </section>
+
+    <section class="wrap" id="next">
+      <div class="section-heading">
+        <div><span class="label">06 / NEXT ITERATION</span><h2>下一轮可验证的改进</h2></div>
+        <p>把作品从“能讲清”推进到“能独立复现”，下一步优先补足公开证据链。</p>
+      </div>
+      <div class="roadmap">
+        <div class="road"><span>NEXT / 01</span><h3>绑定真实仓库</h3><p>替换示意文件结构；增加准确 GitHub URL、README、提交历史和原始验证记录。</p></div>
+        <div class="road"><span>NEXT / 02</span><h3>录制协作演示</h3><p>从任务创建到校验、回执、审核，录一段短视频或 GIF，并补充异常分支。</p></div>
+        <div class="road"><span>NEXT / 03</span><h3>补齐测试证据</h3><p>设计可复现的测试样本，记录通过/失败结果；模拟数据必须明确标识。</p></div>
+      </div>
+    </section>
+
+    <div class="closing">
+      <div class="wrap closing-inner">
+        <div>
+          <span class="eyebrow" style="color:#9bd8bf">BUILD · VERIFY · EXPLAIN</span>
+          <h2>让项目不仅能看，还能被追问。</h2>
+          <p>这份站点展示了协作工作台的设计与 PoC 思路。已经连接公开仓库，下一步补齐关键提交链接、演示视频和可复现实验记录，让每个结论都有出处。</p>
+        </div>
+        <div class="actions">
+          <a class="btn btn-primary" href="#top">返回顶部 ↑</a>
+          <a class="btn btn-outline" href="#validation">再试一次校验 ↗</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="wrap foot-inner">
+      <span>© 2026 AI Native Lab · Personal Project Showcase</span>
+      <span>静态网页 · 不依赖后端 · 不连接真实 GitHub API</span>
+    </div>
+  </footer>
+  <script>
+    "use strict";
+    // 填写你自己真实的 GitHub 链接，留空则显示“待配置”，不会打开虚构地址。
+    // 示例：https://github.com/yourname/your-public-repo
+    const PROJECT_LINKS = {
+      workspace: "",
+      shared: "https://github.com/sallygou/01--early-bird--public",
+      memberA: "https://github.com/sallygou/02--zhang--personal",
+      memberB: "https://github.com/sallygou/03--wang--personal",
+      research: ""
+    };
+    function setLink(node,url,label){
+      node.replaceChildren();
+      if(/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/?$/.test(url)){
+        const a=document.createElement("a");
+        a.href=url;a.target="_blank";a.rel="noopener noreferrer";a.textContent=label+" ↗";
+        node.appendChild(a);
+      }else{node.textContent="真实仓库链接待配置（见 README）";}
+    }
+    document.querySelectorAll("[data-link]").forEach(el=>setLink(el,PROJECT_LINKS[el.dataset.link]||"","查看 GitHub 仓库"));
+    function updateRepoLink(kind){
+      const linkKey=kind==="a"?"memberA":kind==="b"?"memberB":"shared";
+      setLink(document.getElementById("repoExternal"),PROJECT_LINKS[linkKey]||"","查看对应仓库");
+    }
+    updateRepoLink("shared");
+    const repoData = {
+      shared: {
+        title:"公共协作仓 · Shared", desc:"沉淀团队共享任务、结构化协作单据和审核后知识。约束任务交接格式，降低多角色沟通中的上下文丢失风险。",
+        badge:"团队共享", files:"00-推进管理/          # 计划与看板\\n02-协作契约/          # 规则与模板\\n03-知识区/            # 审核知识\\n04-交换区/            # 协同单与回执\\n88-工具箱/            # Python 校验与 Hook\\n作业展示/             # 八份文档"
+      },
+      a: {
+        title:"模拟成员仓 A · Member A", desc:"模拟一位独立执行角色：接收任务、记录处理过程、生成回执；提交前通过规则校验，然后与公共仓同步必要的交付信息。",
+        badge:"个人执行", files:"01-输入/             # 接收协作材料\\n02-任务/             # 进行中任务\\n03-生效区/           # 已确认产出\\n04-归档/             # 完结任务包\\n09-日志/             # 过程记录"
+      },
+      b: {
+        title:"模拟成员仓 B · Member B", desc:"模拟另一位协作角色，展示跨角色交接、退回和修订场景。其存在是为了验证协议可否跨仓使用，不意味着已有真实多人在线协作。",
+        badge:"协同与反馈", files:"01-输入/             # 接收协作材料\\n02-任务/             # 进行中任务\\n03-生效区/           # 已确认产出\\n04-归档/             # 完结任务包\\n09-日志/             # 过程记录"
+      }
+    };
+    document.querySelectorAll("[data-repo]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        document.querySelectorAll("[data-repo]").forEach(b=>{b.classList.remove("active");b.setAttribute("aria-pressed","false")});
+        btn.classList.add("active");btn.setAttribute("aria-pressed","true");
+        const d=repoData[btn.dataset.repo];
+        document.getElementById("repoTitle").textContent=d.title;
+        document.getElementById("repoDesc").textContent=d.desc;
+        document.getElementById("repoBadge").textContent=d.badge;
+        document.getElementById("repoFiles").textContent=d.files.replace(/\\n/g,"\n");
+        updateRepoLink(btn.dataset.repo);
+      });
+    });
+    const stages = [
+      {num:"STEP 01 / TASK", title:"定义任务与验收条件",desc:"先写清目标、输入材料、输出成果、相关角色和人工验收标准，而不是让 Agent 直接从模糊指令开始行动。",tip:"关键原则：任务先结构化，再执行。",code:"# 示例：task.md\\ntask_id: TASK-APPLE-01\\ngoal: 梳理活动交互状态\\nowner: member-a\\nstatus: draft"},
+      {num:"STEP 02 / REQUEST", title:"生成标准化协同单",desc:"向另一角色提出明确请求，通过 document_id、task_id、owner 和状态字段，将任务交接从非结构化聊天变成可跟踪文件。",tip:"关键原则：请求有编号、有负责人、有范围。",code:"---\\ndocument_type: request\\ndocument_id: DOC-001\\ntask_id: TASK-APPLE-01\\nowner: member-a\\nstatus: submitted\\n---"},
+      {num:"STEP 03 / EXECUTION", title:"个人仓独立推进",desc:"接收方在个人工作区记录输入、待决事项、处理过程和产出，避免公共空间被所有中间过程占满。",tip:"关键原则：隔离草稿，保留过程证据。",code:"work/TASK-APPLE-01/\\n  brief.md\\n  inputs.md\\n  decisions.md\\n  progress.md\\n  outputs.md\\n  status.md"},
+      {num:"STEP 04 / RECEIPT", title:"回执或退回构成交接",desc:"完成后通过回执关联原始协同单；如果信息不足，则通过退回单说明原因，避免“已经口头说过”却无法追溯。",tip:"关键原则：每个反馈都能追溯到原单。",code:"---\\ndocument_type: receipt\\ndocument_id: DOC-002\\nrelated_id: DOC-001\\ntask_id: TASK-APPLE-01\\nowner: member-b\\nstatus: submitted\\n---"},
+      {num:"STEP 05 / VALIDATION", title:"预提交规则检查",desc:"课程 PoC 中使用 Python 脚本和 Git pre-commit Hook 检查结构字段、单据关联和文件放置规则；下方可体验简化网页校验。",tip:"关键原则：让确定性规则兜住 AI 的易错输出。",code:"git commit\\n  → pre-commit hook\\n  → validate documents\\n  → pass / reject\\n# 图示是机制说明，不是实时执行日志"},
+      {num:"STEP 06 / HUMAN REVIEW", title:"人工确认后沉淀知识",desc:"通过人工验收后，成果才能进入正式共享知识；保留历史版本以支持复盘。明确 AI 生成与正式知识生效的边界。",tip:"关键原则：AI 辅助，人工签收。",code:"knowledge/\\n  current/  # 已审核、可引用\\n  history/  # 保留旧版本\\nreview_status: approved\\n# 根据真实规则更新此示意"}
+    ];
+    document.querySelectorAll("[data-step]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        document.querySelectorAll("[data-step]").forEach(b=>{b.classList.remove("active");b.setAttribute("aria-pressed","false")});
+        btn.classList.add("active");btn.setAttribute("aria-pressed","true");
+        const v=stages[Number(btn.dataset.step)];
+        document.getElementById("stepNum").textContent=v.num;
+        document.getElementById("stepTitle").textContent=v.title;
+        document.getElementById("stepDesc").textContent=v.desc;
+        document.getElementById("stepTip").textContent=v.tip;
+        document.getElementById("stepCode").textContent=v.code.replace(/\\n/g,"\n");
+      });
+    });
+    const cases={
+      ok:"---\ndocument_type: request\ndocument_id: DOC-001\ntask_id: TASK-APPLE-01\nowner: member-a\nstatus: submitted\n---\n# 活动平台与交易系统协同任务\n请核对预约状态信息的交接需求。",
+      missing:"---\ndocument_type: request\ndocument_id: DOC-001\ntask_id: TASK-APPLE-01\nstatus: submitted\n---\n# 缺少 owner 字段",
+      relation:"---\ndocument_type: receipt\ndocument_id: DOC-002\ntask_id: TASK-APPLE-01\nowner: member-b\nstatus: submitted\n---\n# 回执应包含 related_id"
+    };
+    document.querySelectorAll("[data-case]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        document.getElementById("yaml").value=cases[btn.dataset.case];
+        document.getElementById("checkResult").className="check-result";
+        document.getElementById("checkResult").innerHTML="<h4>示例已切换</h4>点击“运行校验”查看结果。";
+      });
+    });
+    function validate(){
+      const content=document.getElementById("yaml").value.replace(/\r\n/g,"\n");
+      const lines=content.split("\n"), errors=[];
+      if(lines[0].trim()!=="---"){ errors.push("缺少开头的 --- 分隔符。"); }
+      let end=-1;
+      for(let i=1;i<lines.length;i++){ if(lines[i].trim()==="---"){end=i;break;} }
+      if(end<0) errors.push("未找到 front matter 结束分隔符 ---。");
+      const fields={};
+      if(end>=0){
+        lines.slice(1,end).forEach((line,idx)=>{
+          if(!line.trim() || /^\s*#/.test(line)) return;
+          const match=line.match(/^([A-Za-z_][A-Za-z0-9_-]*)\s*:\s*(.*?)\s*$/);
+          if(!match) errors.push("第 "+(idx+2)+" 行不符合此演示所支持的 key: value 格式。");
+          else if(Object.prototype.hasOwnProperty.call(fields,match[1])) errors.push("字段重复："+match[1]);
+          else fields[match[1]]=match[2].replace(/^['"]|['"]$/g,"");
+        });
+      }
+      ["document_type","document_id","task_id","owner","status"].forEach(k=>{if(!fields[k])errors.push("缺少必填字段："+k)});
+      if(fields.document_type && !["request","receipt","return"].includes(fields.document_type)) errors.push("document_type 必须是 request / receipt / return。");
+      if(fields.status && !["draft","in_progress","submitted","approved","returned","archived"].includes(fields.status)) errors.push("status 不在演示允许的枚举范围内。");
+      if(fields.document_type && fields.document_type!=="request" && !fields.related_id) errors.push("回执/退回单必须填写 related_id 关联原始单据。");
+      if(fields.related_id && fields.related_id===fields.document_id)errors.push("related_id 不能与当前 document_id 相同。");
+      const root=document.getElementById("checkResult");
+      root.className="check-result "+(errors.length?"bad":"good");
+      const heading=document.createElement("h4");
+      heading.textContent=errors.length?"✕ 校验未通过 · "+errors.length+" 项问题":"✓ 校验通过 · 示例规则满足";
+      root.replaceChildren(heading);
+      if(errors.length){
+        const ul=document.createElement("ul");
+        errors.forEach(msg=>{const li=document.createElement("li");li.textContent=msg;ul.appendChild(li)});
+        root.appendChild(ul);
+      } else {
+        const p=document.createElement("p");
+        p.textContent="已检查必填字段、字段枚举和回执关联规则。这仅说明当前文本符合演示规则。";
+        p.style.margin="0";p.style.color="inherit";
+        root.appendChild(p);
+      }
+    }
+    document.getElementById("run").addEventListener("click",validate);
+    const menu=document.getElementById("menu"), navlinks=document.getElementById("navlinks");
+    menu.addEventListener("click",()=>{
+      const opened=navlinks.classList.toggle("open");menu.setAttribute("aria-expanded",String(opened));menu.textContent=opened?"✕":"☰";
+    });
+    navlinks.querySelectorAll("a").forEach(a=>a.addEventListener("click",()=>{navlinks.classList.remove("open");menu.setAttribute("aria-expanded","false");menu.textContent="☰";}));
+  </script>
+</body>
+</html>
